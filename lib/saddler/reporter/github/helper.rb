@@ -43,11 +43,12 @@ module Saddler
 
             errors.each do |error|
               line_no = error['@line'] && error['@line'].to_i
-              next unless patch.changed_line_numbers.include?(line_no)
+              next unless patch.changed_line_numbers.include?(line_no) || error['@message'].match('brakemanscanner.org') # brakeman なら check skip
 
               severity = error['@severity'] && error['@severity'].upcase
               message = error['@message']
               position = patch.find_patch_position_by_line_number(line_no)
+              position = 1 if position.nil? && error['@message'].match('brakemanscanner.org') # brakeman なら nil のとき 1 を設定
 
               comments << Comment.new(patch.secure_hash, [severity, message].compact.join(': '), patch.file, position)
             end
